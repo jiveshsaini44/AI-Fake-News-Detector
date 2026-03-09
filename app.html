@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Fake News Detector - Advanced Truth Verification</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+            color: white;
+        }
+
+        /* Animated Background Blobs */
+        .bg-blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .blob-1 {
+            width: 400px;
+            height: 400px;
+            background: #8b5cf6;
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .blob-2 {
+            width: 350px;
+            height: 350px;
+            background: #3b82f6;
+            bottom: -100px;
+            right: -100px;
+            animation-delay: 3s;
+        }
+
+        .blob-3 {
+            width: 300px;
+            height: 300px;
+            background: #ec4899;
+            top: 50%;
+            right: 10%;
+            animation-delay: 7s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(100px, -100px) scale(1.1); }
+            66% { transform: translate(-100px, 50px) scale(0.9); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .shield-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.3);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 20px 40px rgba(139, 92, 246, 0.3); }
+            50% { transform: scale(1.05); box-shadow: 0 25px 50px rgba(139, 92, 246, 0.5); }
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Main Card */
+        .main-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 0.8s ease;
+            margin-bottom: 30px;
+        }
+
+        /* Input Section */
+        .input-section {
+            margin-bottom: 25px;
+        }
+
+        .input-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        textarea, input[type="url"] {
+            width: 100%;
+            padding: 18px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            font-size: 1rem;
+            font-family: inherit;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        textarea::placeholder, input[type="url"]::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        textarea:focus, input[type="url"]:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.05);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+        }
+
+        /* Analyze Button */
+        .analyze-btn {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .analyze-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .analyze-btn:hover:not(:disabled)::before {
+            left: 100%;
+        }
+
+        .analyze-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(139, 92, 246, 0.5);
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Results Section */
+        .results {
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result-header {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        /* Verdict Card */
+        .verdict-card {
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: scaleIn 0.5s ease;
+            border: 3px solid;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .verdict-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.1;
+            z-index: 0;
+        }
+
+        .verdict-card.fake {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%);
+            border-color: #ef4444;
+        }
+
+        .verdict-card.fake::before {
+            background: linear-gradient(45deg, #ef4444 25%, transparent 25%, transparent 75%, #ef4444 75%, #ef4444),
+                        linear-gradient(45deg, #ef4444 25%, transparent 25%, transparent 75%, #ef4444 75%, #ef4444);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+
+        .verdict-card.real {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.1) 100%);
+            border-color: #22c55e;
+        }
+
+        .verdict-content {
+            position: relative;
+            z-index: 1;
+            flex: 1;
+        }
+
+        .verdict-icon {
+            position: relative;
+            z-index: 1;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin-left: 30px;
+        }
+
+        .verdict-icon.fake {
+            background: #ef4444;
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);
+        }
+
+        .verdict-icon.real {
+            background: #22c55e;
+            box-shadow: 0 10px 30px rgba(34, 197, 94, 0.4);
+        }
+
+        .verdict-content h3 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .verdict-content .confidence {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #8b5cf6 0%, #ec4899 100%);
+        }
+
+        .metric-icon {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .metric-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .metric-bar {
+            margin-top: 12px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .metric-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 1s ease;
+            background: linear-gradient(90deg, #8b5cf6 0%, #ec4899 100%);
+        }
+
+        /* History Section */
+        .history-section {
+            margin-top: 30px;
+        }
+
+        .history-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .history-item {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(139, 92, 246, 0.5);
+            transform: translateX(5px);
+        }
+
+        .history-verdict {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .history-verdict.fake {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .history-verdict.real {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .history-text {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Status Message */
+        .status-message {
+            text-align: center;
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: #a78bfa;
+            font-size: 0.95rem;
+            display: none;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+
+            .main-card {
+                padding: 25px;
+            }
+
+            .verdict-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .verdict-icon {
+                margin-left: 0;
+                margin-top: 20px;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background Blobs -->
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
+    <div class="bg-blob blob-3"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="shield-icon">🛡</div>
+            <h1>AI Fake News Detector</h1>
+            <p>Powered by Deep Learning Neural Networks</p>
+        </div>
+
+        <!-- Main Input Card -->
+        <div class="main-card">
+            <div class="input-section">
+                <label class="input-label">
+                    <span>🔗</span>
+                    News URL (Optional)
+                </label>
+                <div class="input-wrapper">
+                    <input type="url" id="newsUrl" placeholder="https://example.com/news-article">
+                </div>
+            </div>
+
+            <div class="input-section">
+                <label class="input-label">
+                    <span>📰</span>
+                    News Text or Article
+                </label>
+                <div class="input-wrapper">
+                    <textarea id="newsText" placeholder="Paste the news article text here..."></textarea>
+                </div>
+            </div>
+
+            <button class="analyze-btn" id="analyzeBtn" onclick="analyzeNews()">
+                <span id="btnIcon">🔍</span>
+                <span id="btnText">Analyze News</span>
+            </button>
+
+            <div class="status-message" id="statusMessage"></div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="hidden">
+            <div class="main-card results">
+                <h2 class="result-header">Analysis Results</h2>
+
+                <!-- Verdict Card -->
+                <div id="verdictCard" class="verdict-card">
+                    <div class="verdict-content">
+                        <h3 id="verdictTitle"></h3>
+                        <p class="confidence">Confidence Score: <strong id="confidenceScore">0%</strong></p>
+                    </div>
+                    <div id="verdictIcon" class="verdict-icon"></div>
+                </div>
+
+                <!-- Metrics Grid -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon">📊</div>
+                        <div class="metric-label">Credibility Score</div>
+                        <div class="metric-value" id="credibilityValue">0</div>
+                        <div class="metric-bar">
+                            <div class="metric-bar-fill" id="credibilityBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon">📝</div>
+                        <div class="metric-label">Language Quality</div>
+                        <div class="metric-value" id="languageValue">0</div>
+                        <div class="metric-bar">
+                            <div class="metric-bar-fill" id="languageBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon">✅</div>
+                        <div class="metric-label">Factual Consistency</div>
+                        <div class="metric-value" id="factualValue">0</div>
+                        <div class="metric-bar">
+                            <div class="metric-bar-fill" id="factualBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon">🛡</div>
+                        <div class="metric-label">Source Reliability</div>
+                        <div class="metric-value" id="sourceValue">0</div>
+                        <div class="metric-bar">
+                            <div class="metric-bar-fill" id="sourceBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon">⚠</div>
+                        <div class="metric-label">Clickbait Score</div>
+                        <div class="metric-value" id="clickbaitValue">0</div>
+                        <div class="metric-bar">
+                            <div class="metric-bar-fill" id="clickbaitBar" style="width: 0%; background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);"></div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon">😠</div>
+                        <div class="metric-label">Emotional Manipulation</div>
+                        <div class="metric-value" id="emotionalValue">0</div>
+                        <div class="metric-bar">
+                            <div class="metric-bar-fill" id="emotionalBar" style="width: 0%; background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Section -->
+            <div class="main-card history-section">
+                <div class="history-header">
+                    <span>🕐</span>
+                    Recent Analyses
+                </div>
+                <div id="historyList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let analysisHistory = [];
+
+        function analyzeNews() {
+            const text = document.getElementById('newsText').value.trim();
+            const url = document.getElementById('newsUrl').value.trim();
+
+            if (!text && !url) {
+                setStatus('⚠ Please enter some text or URL to analyze');
+                return;
+            }
+
+            disableAnalyzeButton();
+            setStatus('🔄 Analyzing with AI models...');
+            document.getElementById('results').classList.add('hidden');
+
+            // Simulate API call with mock data
+            setTimeout(() => {
+                const mockResult = {
+                    accuracy: Math.random() * 100,
+                    verdict: Math.random() > 0.5 ? 'TRUE' : 'FAKE',
+                    credibilityScore: Math.random() * 100,
+                    languageQuality: Math.random() * 100,
+                    factualConsistency: Math.random() * 100,
+                    sourceReliability: Math.random() * 100,
+                    clickbaitScore: Math.random() * 100,
+                    emotionalManipulation: Math.random() * 100,
+                    sentiment: 'neutral',
+                    newsText: text,
+                    url: url || 'Direct input',
+                    timestamp: new Date().toISOString()
+                };
+
+                displayResults(mockResult);
+                addToHistory(mockResult);
+                setStatus('✅ Analysis complete!');
+                enableAnalyzeButton();
+            }, 2000);
+
+            // In production, replace with actual API call:
+            /*
+            fetch('http://localhost:8000/api/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text, url: url })
+            })
+            .then(response => response.json())
+            .then(data => {
+                displayResults(data);
+                addToHistory(data);
+                setStatus('✅ Analysis complete!');
+                enableAnalyzeButton();
+            })
+            .catch(error => {
+                setStatus('❌ Error: ' + error.message);
+                enableAnalyzeButton();
+            });
+            */
+        }
+
+        function displayResults(result) {
+            document.getElementById('results').classList.remove('hidden');
+
+            // Verdict Card
+            const verdictCard = document.getElementById('verdictCard');
+            const verdictIcon = document.getElementById('verdictIcon');
+            const verdictTitle = document.getElementById('verdictTitle');
+            const confidenceScore = document.getElementById('confidenceScore');
+
+            const isFake = result.verdict === 'FAKE';
+            
+            verdictCard.className = 'verdict-card ' + (isFake ? 'fake' : 'real');
+            verdictIcon.className = 'verdict-icon ' + (isFake ? 'fake' : 'real');
+            verdictIcon.textContent = isFake ? '❌' : '✅';
+            verdictTitle.textContent = isFake ? 'FAKE NEWS' : 'TRUE NEWS';
+            confidenceScore.textContent = result.accuracy.toFixed(2) + '%';
+
+            // Metrics
+            updateMetric('credibility', result.credibilityScore);
+            updateMetric('language', result.languageQuality);
+            updateMetric('factual', result.factualConsistency);
+            updateMetric('source', result.sourceReliability);
+            updateMetric('clickbait', result.clickbaitScore);
+            updateMetric('emotional', result.emotionalManipulation);
+
+            // Scroll to results
+            setTimeout(() => {
+                document.getElementById('results').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+            }, 100);
+        }
+
+        function updateMetric(name, value) {
+            const valueElement = document.getElementById(name + 'Value');
+            const barElement = document.getElementById(name + 'Bar');
+            
+            valueElement.textContent = value.toFixed(1);
+            setTimeout(() => {
+                barElement.style.width = value + '%';
+            }, 100);
+        }
+
+        function addToHistory(result) {
+            analysisHistory.unshift(result);
+            if (analysisHistory.length > 5) {
+                analysisHistory.pop();
+            }
+
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+
+            analysisHistory.forEach((item, index) => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <span class="history-verdict ${item.verdict.toLowerCase()}">${item.verdict}</span>
+                    <div class="history-text">${item.newsText || item.url}</div>
+                `;
+                historyList.appendChild(historyItem);
+            });
+        }
+
+        function setStatus(message) {
+            const statusElement = document.getElementById('statusMessage');
+            statusElement.textContent = message;
+            statusElement.style.display = message ? 'block' : 'none';
+        }
+
+        function disableAnalyzeButton() {
+            const btn = document.getElementById('analyzeBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div><span>Analyzing...</span>';
+        }
+
+        function enableAnalyzeButton() {
+            const btn = document.getElementById('analyzeBtn');
+            btn.disabled = false;
+            btn.innerHTML = '<span id="btnIcon">🔍</span><span id="btnText">Analyze News</span>';
+        }
+    </script>
+</body>
+</html>
